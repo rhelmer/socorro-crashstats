@@ -191,7 +191,6 @@ class ReportList(SocorroMiddleware):
                'result_number/%(result_number)s/' % params)
         return self.fetch(url)
 
-
 class ReportIndex(SocorroMiddleware):
 
     def get(self, crash_id):
@@ -201,6 +200,20 @@ class ReportIndex(SocorroMiddleware):
         url = '/crash/processed/by/uuid/%(crash_id)s' % params
         return self.fetch(url)
 
+class HangReport(SocorroMiddleware):
+
+    def get(self, product, version, end_date, duration, listsize, page):
+        params = {
+            'base_url': self.base_url,
+            'product': product,
+            'version': version,
+            'end_date': end_date,
+            'duration': duration,
+            'listsize': listsize,
+            'page': page
+        }
+        url = '/reports/hang/p/%(product)s/v/%(version)s/end/%(end_date)s/duration/%(duration)s/listsize/%(listsize)s/page/%(page)s' % params
+        return self.fetch(url)
 
 class Search(SocorroMiddleware):
 

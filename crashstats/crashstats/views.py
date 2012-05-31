@@ -54,7 +54,6 @@ def plot_graph(start_date, end_date, adubyday, currentversions):
                 if users == 0:
                     logging.warning('no ADU data for %s' % day)
                     continue
-                logging.debug(users)
                 ratio = (float(crashes) / float(users) ) * t
             else:
                 ratio = None
@@ -205,8 +204,27 @@ def builds(request, product=None):
     data['report'] = 'builds'
     return render(request, 'crashstats/builds.html', data)
 
-def hangreport(request, product=None, version=None):
+def hangreport(request, product=None, version=None, listsize=50):
     data = _basedata(product, version)
+
+    page = request.GET.get('page')
+    if page is None:
+        page = 1
+    data['page'] = int(page)
+
+    duration = request.GET.get('duration')
+
+    if duration is None or duration not in ['3','7','14']:
+        duration = 7
+    else:
+       duration = int(duration)
+    data['duration'] = duration
+
+    end_date = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+
+    hangreport = models.HangReport()
+    data['hangreport'] = hangreport.get(product, version, end_date, duration,
+                                        listsize, page)
 
     data['report'] = 'hangreport'
     return render(request, 'crashstats/hangreport.html', data)
