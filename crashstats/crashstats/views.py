@@ -410,9 +410,16 @@ def report_list(request):
     
     result_number = 250
 
+    range_value = int(request.GET.get('range_value'))
+
     api = models.ReportList()
     data['report_list'] = api.get(signature, product_version,
                                   start_date, result_number)
+
+    signature = data['report_list']['hits'][0]['signature']
+
+    comments_api = models.CommentsBySignature()
+    data['comments'] = comments_api.get(signature, start_date, end_date)
 
     return render(request, 'crashstats/report_list.html', data)
 
