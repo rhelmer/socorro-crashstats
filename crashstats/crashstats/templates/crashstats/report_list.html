@@ -383,18 +383,12 @@
         <div class="bug_ids_expanded_list">
     <h3>Bugs for <code>{{ signature }}</code></h3>
   <ul class="bug_ids_expanded full_bug_ids full">
-            <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=752164"
-   title="Find more information in Bugzilla"
-   class="bug-link" >752164</a>   </li>
-            <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=752309"
-   title="Find more information in Bugzilla"
-   class="bug-link" >752309</a>   </li>
-            <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=733793"
-   title="Find more information in Bugzilla"
-   class="bug-link" >733793</a>   </li>
-            <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=603478"
-   title="Find more information in Bugzilla"
-   class="bug-link" >603478</a>   </li>
+            {% for bug in bug_associations %}
+              <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id={{ bug.bug_id }}"
+                     title="Find more information in Bugzilla"
+                     class="bug-link" >{{ bug.bug_id }}</a></li>
+            {% endfor %}
+            <li><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=752164"></a>   </li>
       </ul>
 </div>
        	    <h2>Related Crash Signatures:</h2>

@@ -401,6 +401,8 @@ def report_list(request):
     data = {}
 
     signature = request.GET.get('signature')
+    data['signature'] = signature
+
     product_version = request.GET.get('version')
     end_date = datetime.datetime.strptime(request.GET.get('date'), '%Y-%m-%d')
     duration = int(request.GET.get('range_value'))
@@ -416,7 +418,8 @@ def report_list(request):
     data['report_list'] = api.get(signature, product_version,
                                   start_date, result_number)
 
-    signature = data['report_list']['hits'][0]['signature']
+    bugs_api = models.Bugs()
+    data['bug_associations'] = bugs_api.get(signature)['bug_associations']
 
     comments_api = models.CommentsBySignature()
     data['comments'] = comments_api.get(signature, start_date, end_date)
