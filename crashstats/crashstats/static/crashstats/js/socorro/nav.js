@@ -21,10 +21,11 @@ $(document).ready(function () {
     if ($("#product_version_select")) {
         $("#product_version_select").change(function () {
             product_version = $("#product_version_select").val();
+            report = $("#report_select").val();
             if (product_version == 'Current Versions') {
-                window.location = url_base;
+                window.location = url_base + '/' + report;
             } else {
-                window.location = url_base + '/versions/' + product_version;
+                window.location = url_base + '/versions/' + product_version + '/' + report;
             }
         });
     }
@@ -36,21 +37,21 @@ $(document).ready(function () {
 
             // Handle top crasher selection. If no version was selected in the version drop-down
             // select the top most version and append to the URL.
+            var report_url = url_base + '/';
             if(report.indexOf('topcrasher') !== -1) {
                 var selectedVersion = $("#product_version_select").val();
 
                 if(selectedVersion === "Current Versions") {
-                    selectedVersion = $("#product_version_select").find("option:eq(1)").val();
-                    if (report.charAt(report.length - 1) != '/') {
-                        report += '/';
-                    }
-                    window.location = report + selectedVersion;
+                    selectedVersion = $("#product_version_select")
+                                      .find("option:eq(1)").val();
+                    report_url += report + '/' + selectedVersion;
                 } else {
-                    window.location = report;
+                    report_url += report
                 }
             } else if (report !== 'More Reports') {
-                window.location = report;
+                report_url += report
             }
+            window.location = report_url
         });
     }
 });

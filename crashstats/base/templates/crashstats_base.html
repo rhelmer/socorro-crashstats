@@ -81,16 +81,16 @@
                 <label>Report:</label>
                 <select id="report_select" >
                     <optgroup label=" ">
-                        <option value="{{ url('crashstats.products', product) }}" {% if report == 'products' %}selected{% endif %}>Overview</option>
+                        <option value="" {% if report == 'products' %}selected{% endif %}>Overview</option>
                     </optgroup>
                     <optgroup label=" ">
                         <option value="{{ url('crashstats.daily') }}?p={{ product }}&amp;v[]=" {% if report == 'daily' %}selected{% endif %}>Crashes per User</option>
-                        <option value="{{ url('crashstats.builds', product) }}" {% if report == 'builds' %}selected{% endif %}>Nightly Builds</option>
-                        <option value="{{ url('crashstats.hangreport', product) }}" {% if report == 'hangreport' %}selected{% endif %}>Hang Report</option>
+                        <option value="builds" {% if report == 'builds' %}selected{% endif %}>Nightly Builds</option>
+                        <option value="hangreport" {% if report == 'hangreport' %}selected{% endif %}>Hang Report</option>
                     </optgroup>
                     <optgroup label=" ">
-                        <option value="{{ url('crashstats.topchangers', product) }}" {% if report == 'topchangers' %}selected{% endif %}>Top Changers</option>
-                        <option value="{{ url('crashstats.topcrasher', product) }}" {% if report == 'topcrasher' %}selected{% endif %}>Top Crashers</option>
+                        <option value="topchangers" {% if report == 'topchangers' %}selected{% endif %}>Top Changers</option>
+                        <option value="topcrasher" {% if report == 'topcrasher' %}selected{% endif %}>Top Crashers</option>
                     </optgroup>
                 </select>
             </li>
