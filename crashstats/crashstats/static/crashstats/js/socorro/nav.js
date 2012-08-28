@@ -1,7 +1,5 @@
 $(document).ready(function () {
-    var url_base = $("#url_base").val(),
-        url_site = $("#url_site").val(),
-        product,
+    var product,
         product_version,
         report;
 
@@ -13,7 +11,7 @@ $(document).ready(function () {
     if ($("#products_select")) {
         $("#products_select").change(function () {
             product = $("#products_select").val();
-            window.location = url_site + 'products/' + product;
+            window.location = '/home/products/' + product;
         });
     }
 
@@ -22,11 +20,7 @@ $(document).ready(function () {
         $("#product_version_select").change(function () {
             product_version = $("#product_version_select").val();
             report = $("#report_select").val();
-            if (product_version == 'Current Versions') {
-                window.location = url_base + '/' + report;
-            } else {
-                window.location = url_base + '/versions/' + product_version + '/' + report;
-            }
+            window.location = report + '/versions/' + product_version;
         });
     }
 
@@ -34,7 +28,7 @@ $(document).ready(function () {
     if ($("#report_select")) {
         $("#report_select").change(function () {
             report = $("#report_select").val();
-            window.location = url_base + '/' + report;
+            window.location = report;
         });
     }
 });
