@@ -34,24 +34,7 @@ $(document).ready(function () {
     if ($("#report_select")) {
         $("#report_select").change(function () {
             report = $("#report_select").val();
-
-            // Handle top crasher selection. If no version was selected in the version drop-down
-            // select the top most version and append to the URL.
-            var report_url = url_base + '/';
-            if(report.indexOf('topcrasher') !== -1) {
-                var selectedVersion = $("#product_version_select").val();
-
-                if(selectedVersion === "Current Versions") {
-                    selectedVersion = $("#product_version_select")
-                                      .find("option:eq(1)").val();
-                    report_url += report + '/' + selectedVersion;
-                } else {
-                    report_url += report
-                }
-            } else if (report !== 'More Reports') {
-                report_url += report
-            }
-            window.location = report_url
+            window.location = url_base + '/' + report;
         });
     }
 });
