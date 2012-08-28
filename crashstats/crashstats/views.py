@@ -281,12 +281,6 @@ def hangreport(request, product=None, versions=None, listsize=100):
     except ValueError:
         return http.HttpResponseBadRequest('Invalid duration')
 
-    if duration not in (3, 7, 14, 28):
-        return http.HttpResponseBadRequest('Invalid duration')
-    data['duration'] = int(duration)
-
-    end_date = datetime.datetime.utcnow().strftime('%Y-%m-%d')
-
     # FIXME refactor into common function
     if not versions:
         # simulate what the nav.js does which is to take the latest version
@@ -316,13 +310,23 @@ def hangreport(request, product=None, versions=None, listsize=100):
     data['hangreport']['total_pages'] = data['hangreport']['totalPages']
     data['hangreport']['total_count'] = data['hangreport']['totalCount']
 
+=======
+    hangreport = models.HangReport()
+
+    all_versions = []
+    if versions is None:
+        for release in request.currentversions:
+            if release['product'] == request.product and release['featured']:
+                all_versions.append(release['version'])
+
+    data['hangreport'] = hangreport.get(product, all_versions, end_date,
+                                        duration, listsize, page)
+>>>>>>> convert hangreport over to standard url scheme
     data['report'] = 'hangreport'
-    if page > data['hangreport']['totalPages']:
+    if page > data['hangreport']['totalPages'] > 0:
         # naughty parameter, go to the last page
-        if isinstance(versions, (list, tuple)):
-            versions = ';'.join(versions)
         url = reverse('crashstats.hangreport',
-                      args=[product, versions])
+                      args=[product, ';'.join(all_versions)])
         url += ('?duration=%s&page=%s'
                 % (duration, data['hangreport']['totalPages']))
         return redirect(url)
