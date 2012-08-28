@@ -198,13 +198,8 @@ def topcrasher(request, product=None, versions=None, days=None,
 
 
 @set_base_data
-def daily(request):
+def daily(request, product=None, versions=None):
     data = {}
-
-    product = request.GET.get('p')
-    if product is None:
-        product = 'Firefox'
-    data['product'] = product
 
     versions = []
     for release in request.currentversions:
