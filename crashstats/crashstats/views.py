@@ -111,20 +111,17 @@ def set_base_data(view):
 
 
 @set_base_data
-def products(request, product, versions=None):
+def products(request, product, versions=None, days=7):
     data = {}
 
     # FIXME hardcoded default, find a better place for this to live
     os_names = ['Windows', 'Mac', 'Linux']
 
-    duration = request.GET.get('duration')
+    days = int(days)
+    if days not in [3, 7, 14]:
+        days = 7
 
-    if duration is None or duration not in ['3', '7', '14']:
-        duration = 7
-    else:
-        duration = int(duration)
-
-    data['duration'] = duration
+    data['days'] = days
 
     if versions is None:
         versions = []
@@ -134,11 +131,12 @@ def products(request, product, versions=None):
     else:
         versions = versions.split(';')
 
+    data['versions'] = versions
     if len(versions) == 1:
         data['version'] = versions[0]
 
     end_date = datetime.datetime.utcnow()
-    start_date = end_date - datetime.timedelta(days=duration + 1)
+    start_date = end_date - datetime.timedelta(days=days + 1)
 
     mware = models.ADUByDay()
     adubyday = mware.get(product, versions, os_names,
