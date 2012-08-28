@@ -320,32 +320,29 @@ def hangreport(request, product=None, versions=None, listsize=5):
 
 
 @set_base_data
-def topchangers(request, product=None, versions=None, duration=7):
+def topchangers(request, product=None, versions=None, days=7):
     data = {}
 
-    if request.GET.get('duration'):
-        # the old URL
-        url = reverse('crashstats.topchangers',
-                      kwargs=dict(product=product,
-                                  versions=versions,
-                                  duration=duration))
-        return redirect(url)
+    days = int(days)
+    if days not in (3, 7, 14, 28):
+        days = 7
 
-    duration = int(duration)
-    if duration not in (3, 7, 14, 28):
-        return http.HttpResponseBadRequest('Invalid duration')
-    data['duration'] = duration
-
-    all_versions = []
-    if versions is None:
+    if not versions:
+        # :(
+        # simulate what the nav.js does which is to take the latest version
+        # for this product.
         for release in request.currentversions:
-            if release['product'] == request.product and release['featured']:
-                all_versions.append(release['version'])
+            if release['product'] == product and release['featured']:
+                url = reverse('crashstats.topchangers',
+                              kwargs=dict(product=product,
+                                          versions=release['version'],
+                                          days=days))
+                return redirect(url)
     else:
-        # xxx: why is it called "versions" when it's a single value?
-        all_versions.append(versions)
+        versions = versions.split(';')
 
-    data['versions'] = all_versions
+    data['days'] = days
+    data['versions'] = versions 
 
     end_date = datetime.datetime.utcnow()
 
@@ -354,9 +351,9 @@ def topchangers(request, product=None, versions=None, duration=7):
 
     changers = defaultdict(list)
     api = models.TCBS()
-    for v in all_versions:
+    for v in versions:
         tcbs = api.get(product, v, crash_type, end_date,
-                       duration=duration * 24, limit='300')
+                       duration=days * 24, limit='300')
 
         for crash in tcbs['crashes']:
             if crash['changeInRank'] != 'new':
