@@ -289,7 +289,7 @@ def hangreport(request, product=None, versions=None, listsize=5):
     except ValueError:
         return http.HttpResponseBadRequest('Invalid page')
 
-    duration = request.GET.get('duration', 7)
+    duration = int(request.GET.get('duration', 7))
     if duration not in (3, 7, 14, 28):
         return http.HttpResponseBadRequest('Invalid duration')
     data['duration'] = int(duration)
@@ -297,16 +297,20 @@ def hangreport(request, product=None, versions=None, listsize=5):
     end_date = datetime.datetime.utcnow().strftime('%Y-%m-%d')
 
     hangreport = models.HangReport()
-    assert versions
-    data['hangreport'] = hangreport.get(product, versions, end_date, duration,
-                                        listsize, page)
+
+    all_versions = []
+    if versions is None:
+        for release in request.currentversions:
+            if release['product'] == request.product and release['featured']:
+                all_versions.append(release['version'])
+
+    data['hangreport'] = hangreport.get(product, all_versions, end_date,
+                                        duration, listsize, page)
     data['report'] = 'hangreport'
-    if page > data['hangreport']['totalPages']:
+    if page > data['hangreport']['totalPages'] > 0:
         # naughty parameter, go to the last page
-        if isinstance(versions, (list, tuple)):
-            versions = ';'.join(versions)
         url = reverse('crashstats.hangreport',
-                      args=[product, versions])
+                      args=[product, ';'.join(all_versions)])
         url += ('?duration=%s&page=%s'
                 % (duration, data['hangreport']['totalPages']))
         return redirect(url)
