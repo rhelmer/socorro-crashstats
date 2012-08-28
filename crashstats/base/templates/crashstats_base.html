@@ -109,17 +109,16 @@
                 <label>Report:</label>
                 <select id="report_select" >
                     <optgroup label=" ">
-                        <option value="" {% if report == 'products' %}selected{% endif %}>Overview</option>
+                        <option value="{{ url('crashstats.home', product) }}" {% if report == 'products' %}selected{% endif %}>Overview</option>
                     </optgroup>
                     <optgroup label=" ">
-                        {# FIXME need to rewrite nav.js further and use url() here instead #}
-                        <option value="report/daily" {% if report == 'daily' %}selected{% endif %}>Crashes per User</option>
-                        <option value="report/builds" {% if report == 'builds' %}selected{% endif %}>Nightly Builds</option>
-                        <option value="report/hangreport" {% if report == 'hangreport' %}selected{% endif %}>Hang Report</option>
+                        <option value="{{ url('crashstats.daily', product) }}" {% if report == 'daily' %}selected{% endif %}>Crashes per User</option>
+                        <option value="{{ url('crashstats.builds', product) }}" {% if report == 'builds' %}selected{% endif %}>Nightly Builds</option>
+                        <option value="{{ url('crashstats.hangreport', product) }}" {% if report == 'hangreport' %}selected{% endif %}>Hang Report</option>
                     </optgroup>
                     <optgroup label=" ">
-                        <option value="report/topchangers" {% if report == 'topchangers' %}selected{% endif %}>Top Changers</option>
-                        <option value="report/topcrasher" {% if report == 'topcrasher' %}selected{% endif %}>Top Crashers</option>
+                        <option value="{{ url('crashstats.topchangers', product) }}" {% if report == 'topchangers' %}selected{% endif %}>Top Changers</option>
+                        <option value="{{ url('crashstats.topcrasher', product) }}" {% if report == 'topcrasher' %}selected{% endif %}>Top Crashers</option>
                     </optgroup>
                 </select>
             </li>
