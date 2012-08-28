@@ -85,7 +85,7 @@
                         <option value="" {% if report == 'products' %}selected{% endif %}>Overview</option>
                     </optgroup>
                     <optgroup label=" ">
-                        <option value="{{ url('crashstats.daily') }}?p={{ product }}&amp;v[]=" {% if report == 'daily' %}selected{% endif %}>Crashes per User</option>
+                        <option value="daily" {% if report == 'daily' %}selected{% endif %}>Crashes per User</option>
                         <option value="builds" {% if report == 'builds' %}selected{% endif %}>Nightly Builds</option>
                         <option value="hangreport" {% if report == 'hangreport' %}selected{% endif %}>Hang Report</option>
                     </optgroup>
