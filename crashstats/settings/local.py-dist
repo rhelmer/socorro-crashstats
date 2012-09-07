@@ -24,6 +24,16 @@ BUG_PRODUCT_MAP = {
     'Fennec': 'Firefox for Android'
 }
 
+VCS_MAPPINGS = {
+    'cvs': {
+        'cvs.mozilla.org': 'http://bonsai.mozilla.org/cvsblame.cgi?file=%(file)s&rev=%(revision)s&mark=%(line)s#%(line)s'
+    },
+    'hg': {
+        'hg.mozilla.org': 'http://hg.mozilla.org/%(repo)s/annotate/%(revision)s/%(file)s#l%(line)s'
+    }
+}
+
+
 # Enable this to be able to run tests
 # Comment out to use memcache from settings/base.py
 CACHES = {

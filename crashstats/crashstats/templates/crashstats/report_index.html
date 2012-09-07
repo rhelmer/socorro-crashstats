@@ -277,16 +277,18 @@
                     </tr>
                    </thead>
                    <tbody>
-                   {% for frame in threads[crashing_thread] %}
+                   {% for frame in threads[0] %}
                      <tr >
-                       <td>{{ frame.number }}</td>
-                       <td>{{ frame.module }}</td>
-                       {% if frame.signature == '' %}
-                       <td title="{{ frame.module }} @{{ frame.address}}">{{ frame.module }} @{{ frame.address }}</td>
-                       {% else %}
+                       <td>{{ frame.frame_num }}</td>
+                       <td>{{ frame.module_name }}</td>
                        <td title="{{ frame.signature }}">{{ frame.signature }}</td>
-                       {% endif %}
+                       {% if frame.source_link %}
+                       <td>
+                         <a href="{{ frame.source_link }}">{{ frame.source_filename }}</a>
+                       </td>
+                       {% else %}
                        <td>{{ frame.source }}</td>
+                       {% endif %}
                      </tr>
                      {% endfor %}
                    </tbody>
@@ -294,8 +296,8 @@
 
                  <p id="showallthreads" class="hidden"><a href="#allthreads">Show/hide other threads</a></p>
                  <div id="allthreads">
-                 {% for thread in threads %}
-                   <h2>Thread {{ thread }}</h2>
+                 {% for thread_num in threads %}
+                   <h2>Thread {{ thread_num }}</h2>
                    <table class="data-table">
                      <thead>
                        <tr>
@@ -306,16 +308,18 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for frame in threads.thread %}
+                        {% for frame in threads[thread_num] %}
                         <tr >
-                          <td>{{ frame.number }}</td>
-                          <td>{{ frame.module }}</td>
-                          {% if frame.signature == '' %}
-                          <td title="{{ frame.module }} @{{ frame.address}}">{{ frame.module }} @{{ frame.address }}</td>
-                          {% else %}
+                          <td>{{ frame.frame_num }}</td>
+                          <td>{{ frame.module_name }}</td>
                           <td title="{{ frame.signature }}">{{ frame.signature }}</td>
-                          {% endif %}
+                          {% if frame.source_link %}
+                          <td>
+                          <a href="{{ frame.source_link }}">{{ frame.source_filename }}</a>
+                          </td>
+                          {% else %}
                           <td>{{ frame.source }}</td>
+                          {% endif %}
                         </tr>
                         {% endfor %}
                       </tbody>

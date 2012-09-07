@@ -2,6 +2,7 @@ import logging
 import json
 import datetime
 import functools
+import re
 from collections import defaultdict
 from django import http
 from django.shortcuts import render, redirect
@@ -376,38 +377,98 @@ def report_index(request, crash_id):
     data['product'] = data['report']['product']
     data['version'] = data['report']['version']
 
-    modules = []
-    threads = {}
+    data['modules'] = []
+    data['threads'] = {}
+
     for line in data['report']['dump'].split('\n'):
         entry = line.split('|')
-        if entry[0] == 'Module':
-            modules.append({
+        if entry[0] == 'OS':
+            data['os_name'] = entry[1]
+            data['os_version'] = entry[2]
+            continue
+        elif entry[0] == 'CPU':
+            data['cpu_name'] = entry[1]
+            data['cpu_version'] = entry[2]
+            continue
+        elif entry[0] == 'Crash':
+            data['reason'] = entry[1]
+            data['address'] = entry[2]
+            if len(entry[3]) == 0:
+                data['crashed_thread'] = -1
+            else:
+                data['crashed_thread'] = len(entry[3])
+            continue
+        elif entry[0] == 'Module':
+            data['modules'].append({
                 'filename': entry[1],
                 'version': entry[2],
                 'debug_filename': entry[3],
                 'debug_identifier': entry[4]
             })
+            continue
         elif entry[0].isdigit():
-            thread_number = int(entry[0])
-            frame = {
-                'number': int(entry[1]),
-                'module': entry[2],
-                'signature': entry[3],
-                'source': entry[4],
-                'FIXME': entry[5],
-                'address': entry[6]
-            }
-            # crashing thread is listed first
-            if threads == {}:
-                data['crashing_thread'] = thread_number
+            thread_num, frame_num, module_name, function, source, source_line, \
+            instruction = entry
 
-            if thread_number in threads:
-                threads[thread_number].append(frame)
+            signature = None
+            if function:
+                # Remove spaces before all stars, ampersands, and commas
+                function = re.sub('/ (?=[\*&,])/', '', function)
+                # Ensure a space after commas
+                function = re.sub('/(?<=,)(?! )/', '', function)
+                signature = function
+            elif source and source_line:
+                signature = '%s#%s' % (source, source_line)
+            elif module_name:
+                signature = '%s@%s' % (module_name, instruction)
             else:
-                threads[thread_number] = [frame]
+                signature = '@%s' % instruction
 
-    data['modules'] = modules
-    data['threads'] = threads
+            frame = {
+                'module_name': module_name,
+                'frame_num': frame_num,
+                'function': function,
+                'instruction': instruction,
+                'signature': signature,
+                'source': source,
+                'source_line': source_line,
+                'short_signature': re.sub('/\(.*\)/', '', signature),
+                'source_filename': '',
+                'source_link': '',
+                'source_info': ''
+            }
+
+            if source:
+                vcsinfo = source.split(':')
+                if len(vcsinfo) == 4:
+                    vcstype, root, source_file, revision = vcsinfo
+                    server, repo = root.split('/', 2)
+
+                    frame['source_filename'] = source_file
+
+                    vcs_mappings = settings.VCS_MAPPINGS
+                    if vcstype in vcs_mappings:
+                        if server in vcs_mappings[vcstype]:
+                            link = vcs_mappings[vcstype][server]
+                            frame['source_link'] = link % {
+                                'repo': repo,
+                                'file': source_file,
+                                'revision': revision,
+                                'line': frame['source_line']
+                            }
+                    else:
+                        path_parts = source.split('/')
+                        frame['source_filename'] = path_parts.pop()
+
+                if frame['source_filename'] and frame['source_line']:
+                    frame['source_info'] = '%s:%s' % (frame['source_filename'],
+                                                      frame['source_line'])
+
+                thread_num = int(thread_num)
+                if thread_num in data['threads']:
+                    data['threads'][thread_num].append(frame)
+                else:
+                    data['threads'][thread_num] = [frame]
 
     bugs_api = models.Bugs()
     data['bug_associations'] = bugs_api.get(
