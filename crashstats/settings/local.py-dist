@@ -19,6 +19,11 @@ DEFAULT_PRODUCT = 'WaterWolf'
 
 BZAPI_BASE_URL = 'https://api-dev.bugzilla.mozilla.org/1.1'
 
+# Some products have a different name in bugzilla and Socorro.
+BUG_PRODUCT_MAP = {
+    'Fennec': 'Firefox for Android'
+}
+
 # Enable this to be able to run tests
 # Comment out to use memcache from settings/base.py
 CACHES = {
