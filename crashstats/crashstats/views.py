@@ -264,42 +264,70 @@ def builds(request, product=None, versions=None):
 
 
 @set_base_data
-def hangreport(request, product=None, versions=None, listsize=5):
+def hangreport(request, product=None, versions=None, listsize=100):
     data = {}
 
     try:
         page = int(request.GET.get('page', 1))
+        if page < 1:
+            page = 1
     except ValueError:
         return http.HttpResponseBadRequest('Invalid page')
 
-    duration = int(request.GET.get('duration', 7))
+    try:
+        duration = int(request.GET.get('duration', 7))
+    except ValueError:
+        return http.HttpResponseBadRequest('Invalid duration')
+
     if duration not in (3, 7, 14, 28):
         return http.HttpResponseBadRequest('Invalid duration')
     data['duration'] = int(duration)
 
     end_date = datetime.datetime.utcnow().strftime('%Y-%m-%d')
 
-    hangreport = models.HangReport()
-
-    all_versions = []
-    if versions is None:
+    # FIXME refactor into common function
+    if not versions:
+        # simulate what the nav.js does which is to take the latest version
+        # for this product.
         for release in request.currentversions:
-            if release['product'] == request.product and release['featured']:
-                all_versions.append(release['version'])
+            if release['product'] == product and release['featured']:
+                url = reverse('crashstats.hangreport',
+                              kwargs=dict(product=product,
+                                          versions=release['version']))
+                return redirect(url)
+    else:
+        versions = versions.split(';')[0]
 
-    data['hangreport'] = hangreport.get(product, all_versions, end_date,
-                                        duration, listsize, page)
+    data['version'] = versions
+
+    current_query = request.GET.copy()
+    if 'page' in current_query:
+        del current_query['page']
+    data['current_url'] = '%s?%s' % (reverse('crashstats.hangreport',
+                                     args=[product, versions]),
+                                     current_query.urlencode())
+
+    api = models.HangReport()
+    data['hangreport'] = api.get(product, versions, end_date, duration,
+                                 listsize, page)
+
+    data['hangreport']['total_pages'] = data['hangreport']['totalPages']
+    data['hangreport']['total_count'] = data['hangreport']['totalCount']
+
     data['report'] = 'hangreport'
     if page > data['hangreport']['totalPages'] > 0:
         # naughty parameter, go to the last page
+        if isinstance(versions, (list, tuple)):
+            versions = ';'.join(versions)
         url = reverse('crashstats.hangreport',
-                      args=[product, ';'.join(all_versions)])
+                      args=[product, versions])
         url += ('?duration=%s&page=%s'
                 % (duration, data['hangreport']['totalPages']))
         return redirect(url)
 
     data['current_page'] = page
     return render(request, 'crashstats/hangreport.html', data)
+
 
 
 @set_base_data
@@ -407,13 +435,20 @@ def report_list(request):
     data = {}
 
     try:
-        data['current_page'] = int(request.GET.get('page', 1))
+        page = int(request.GET.get('page', 1))
     except ValueError:
         return http.HttpResponseBadRequest('Invalid page')
 
+    data['current_page'] = page
+
     signature = request.GET.get('signature')
     product_version = request.GET.get('version')
-    end_date = datetime.datetime.strptime(request.GET.get('date'), '%Y-%m-%d')
+    if 'date' in request.GET:
+        end_date = datetime.datetime.strptime(request.GET.get('date'),
+                                              '%Y-%m-%d')
+    else:
+        end_date = datetime.datetime.utcnow()
+    
     duration = int(request.GET.get('range_value'))
     data['current_day'] = duration
 
@@ -422,10 +457,18 @@ def report_list(request):
     data['end_date'] = end_date.strftime('%Y-%m-%d')
 
     results_per_page = 250
+    result_offset = results_per_page * (page - 1)
 
     api = models.ReportList()
     data['report_list'] = api.get(signature, product_version,
-                                  start_date, results_per_page)
+                                  start_date, results_per_page,
+                                  result_offset)
+
+    current_query = request.GET.copy()
+    if 'page' in current_query:
+        del current_query['page']
+    data['current_url'] = '%s?%s' % (reverse('crashstats.report_list'),
+                                     current_query.urlencode())
 
     # TODO do something more user-friendly in the case of missing data...
     # TODO will require template work
@@ -436,8 +479,10 @@ def report_list(request):
     data['version'] = data['report_list']['hits'][0]['version']
     data['signature'] = data['report_list']['hits'][0]['signature']
 
-    data['total_pages'] = int(math.ceil(
+    data['report_list']['total_pages'] = int(math.ceil(
         data['report_list']['total'] / float(results_per_page)))
+
+    data['report_list']['total_count'] = data['report_list']['total']
 
     data['comments'] = []
     data['table'] = {}
@@ -450,6 +495,10 @@ def report_list(request):
         report['date_processed'] = datetime.datetime.strptime(
           report['date_processed'], '%Y-%m-%d %H:%M:%S.%f+00:00').strftime(
             '%b %d, %Y %H:%M')
+
+        report['install_time'] = datetime.datetime.strptime(
+          report['install_time'], '%Y-%m-%d %H:%M:%S+00:00').strftime(
+            '%Y-%m-%d %H:%M:%S')
 
         data['hits'] = report
 
@@ -482,16 +531,34 @@ def report_list(request):
 def query(request):
     data = {}
 
+    results_per_page = 100
+
+    try:
+        data['current_page'] = int(request.GET.get('page', 1))
+    except ValueError:
+        return http.HttpResponseBadRequest('Invalid page')
+
+    current_query = request.GET.copy()
+    if 'page' in current_query:
+        del current_query['page']
+    data['current_url'] = '%s?%s' % (reverse('crashstats.query'),
+                                     current_query.urlencode())
+
     api = models.Search()
-    # XXX why on earth are these numbers hard-coded?
+    # FIXME implement me
     data['query'] = api.get(
         product='Firefox',
-        versions='13.0a1;14.0a2;13.0b2;12.0',
+        versions='18.0a1;17.0a2;16.0b2;15.0.1',
+        signature='nsIView::GetViewFor(nsIWidget*)',
         os_names='Windows;Mac;Linux',
-        start_date='2012-05-03',
-        end_date='2012-05-10',
+        start_date='2012-09-03',
+        end_date='2012-09-10',
         limit='100'
     )
+
+    data['query']['total_pages'] = int(math.ceil(
+        data['query']['total'] / float(results_per_page)))
+    data['query']['total_count'] = data['query']['total']
 
     return render(request, 'crashstats/query.html', data)
 
