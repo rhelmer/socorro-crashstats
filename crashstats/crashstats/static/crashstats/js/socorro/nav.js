@@ -19,10 +19,10 @@ $(document).ready(function () {
     if ($("#product_version_select")) {
         $("#product_version_select").change(function () {
             product_version = $("#product_version_select").val();
+            report = $("#report_select").val();
             if (product_version === 'Current Versions') {
                 window.location = report;
             } else {
-                report = $("#report_select").val();
                 window.location = report + '/versions/' + product_version;
             }
         });
