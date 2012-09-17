@@ -72,7 +72,7 @@ class TestViews(TestCase):
     def test_homepage_redirect(self):
         response = self.client.get('/')
         eq_(response.status_code, 302)
-        destination = reverse('crashstats.products',
+        destination = reverse('crashstats.home',
                               args=[settings.DEFAULT_PRODUCT])
         ok_(destination in response['Location'])
 
@@ -106,7 +106,7 @@ class TestViews(TestCase):
             self.assertEqual(struct['bugs'][0]['product'], 'allizom.org')
 
     def test_products(self):
-        url = reverse('crashstats.products', args=('Firefox',))
+        url = reverse('crashstats.home', args=('Firefox',))
 
         def mocked_get(url, **options):
             if 'crashes' in url:
@@ -139,25 +139,25 @@ class TestViews(TestCase):
             # see mocked_get() above
 
             # now, let's do it with crazy versions
-            url = reverse('crashstats.products',
+            url = reverse('crashstats.home',
                           args=('Firefox', '19.0;99'))
             response = self.client.get(url)
             self.assertEqual(response.status_code, 404)
 
             # more crazy versions
-            url = reverse('crashstats.products',
+            url = reverse('crashstats.home',
                           args=('Firefox', '99'))
             response = self.client.get(url)
             self.assertEqual(response.status_code, 404)
 
             # now, let's do it with good versions
-            url = reverse('crashstats.products',
+            url = reverse('crashstats.home',
                           args=('Firefox', '18.0;19.0'))
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
 
     def test_products_with_unrecognized_product(self):
-        url = reverse('crashstats.products', args=('NeverHeardOf',))
+        url = reverse('crashstats.home', args=('NeverHeardOf',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
@@ -219,7 +219,7 @@ class TestViews(TestCase):
                 self.assertEqual(response.status_code, 200)
 
     def test_daily(self):
-        url = reverse('crashstats.daily')
+        url = reverse('crashstats.daily', args=('Firefox',))
 
         def mocked_get(url, **options):
             if 'current/versions' in url:
@@ -512,7 +512,7 @@ class TestViews(TestCase):
 
                 # an integer but not one we can accept
                 response = self.client.get(bad_url_duration)
-                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.status_code, 200)
 
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, 200)

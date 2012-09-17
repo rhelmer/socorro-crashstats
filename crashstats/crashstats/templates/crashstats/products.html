@@ -16,9 +16,9 @@
     <div class="page-heading">
         <h2>{{ product }} Crash Data</h2>
          <ul class="options">
-                <li><a href="{{ url('crashstats.products', product, versions|join(';'), 3) }}" {% if days == 3 %} class="selected" {% endif %}>3 days</a></li>
-                <li><a href="{{ url('crashstats.products', product, versions|join(';'), 7) }}" {% if days == 7 %} class="selected" {% endif %}>7 days</a></li>
-                <li><a href="{{ url('crashstats.products', product, versions|join(';'), 14) }}" {% if days == 14 %} class="selected" {% endif %}>14 days</a></li>
+                <li><a href="{{ url('crashstats.home', product, versions|join(';'), 3) }}" {% if days == 3 %} class="selected" {% endif %}>3 days</a></li>
+                <li><a href="{{ url('crashstats.home', product, versions|join(';'), 7) }}" {% if days == 7 %} class="selected" {% endif %}>7 days</a></li>
+                <li><a href="{{ url('crashstats.home', product, versions|join(';'), 14) }}" {% if days == 14 %} class="selected" {% endif %}>14 days</a></li>
             </ul>
     </div>
 
