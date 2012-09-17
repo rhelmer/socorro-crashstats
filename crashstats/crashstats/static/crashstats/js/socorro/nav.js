@@ -20,7 +20,11 @@ $(document).ready(function () {
         $("#product_version_select").change(function () {
             product_version = $("#product_version_select").val();
             report = $("#report_select").val();
-            window.location = report + '/versions/' + product_version;
+            if (product_version === 'Current Versions') {
+                window.location = report;
+            } else {
+                window.location = report + '/versions/' + product_version;
+            }
         });
     }
 
