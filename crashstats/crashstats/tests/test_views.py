@@ -572,12 +572,6 @@ class TestViews(TestCase):
             response = self.client.get(url, {'page': ''})
             self.assertEqual(response.status_code, 400)
 
-            response = self.client.get(url, {'duration': 'xxx'})
-            self.assertEqual(response.status_code, 400)
-
-            response = self.client.get(url, {'duration': 999})
-            self.assertEqual(response.status_code, 400)
-
     def test_signature_summary(self):
         def mocked_get(url, **options):
             if 'signaturesummary' in url:
@@ -619,7 +613,10 @@ class TestViews(TestCase):
             self.assertTrue(struct['uptimeRange'])
 
     @mock.patch('requests.get')
-    def test_report_index(self, rget):
+    @mock.patch('requests.post')
+    def test_report_index(self, rget, rpost):
+        raise XXX
+
         dump = "OS|Mac OS X|10.6.8 10K549\\nCPU|amd64|family 6 mod"
         comment0 = "This is a comment"
         def mocked_get(url, **options):

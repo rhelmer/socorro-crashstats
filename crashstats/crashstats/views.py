@@ -14,6 +14,7 @@ from session_csrf import anonymous_csrf
 from . import models
 from . import forms
 from . import utils
+from .decorators import check_days_parameter
 
 
 def plot_graph(start_date, end_date, crashes, currentversions):
@@ -88,17 +89,13 @@ def set_base_data(view):
 
 
 @set_base_data
-def products(request, product, versions=None, days=7):
+@check_days_parameter([3, 7, 14], default=7)
+def products(request, product, versions=None):
+    days = request.days
     data = {}
 
     # FIXME hardcoded default, find a better place for this to live
     os_names = settings.OPERATING_SYSTEMS
-
-    days = int(days)
-    if days not in [3, 7, 14]:
-        days = 7
-
-    data['days'] = days
 
     if versions is None:
         versions = []
@@ -123,12 +120,14 @@ def products(request, product, versions=None, days=7):
                    request.currentversions)
     )
     data['report'] = 'products'
+    data['days'] = days
     return render(request, 'crashstats/products.html', data)
 
 
 @set_base_data
 @anonymous_csrf
-def topcrasher(request, product=None, versions=None, days=None,
+@check_days_parameter([1, 3, 7, 14, 28], default=7)
+def topcrasher(request, product=None, versions=None,
                crash_type=None, os_name=None):
     data = {}
 
@@ -148,11 +147,7 @@ def topcrasher(request, product=None, versions=None, days=None,
     if len(versions) == 1:
         data['version'] = versions[0]
 
-    if days not in ['1', '3', '7', '14', '28']:
-        days = 7
-    days = int(days)
-    data['days'] = days
-
+    days = request.days
     end_date = datetime.datetime.utcnow()
 
     if crash_type not in ['all', 'browser', 'plugin', 'content']:
@@ -191,6 +186,7 @@ def topcrasher(request, product=None, versions=None, days=None,
 
     data['tcbs'] = tcbs
     data['report'] = 'topcrasher'
+    data['days'] = days
 
     return render(request, 'crashstats/topcrasher.html', data)
 
@@ -264,9 +260,9 @@ def builds(request, product=None, versions=None):
 
 
 @set_base_data
+@check_days_parameter([3, 7, 14, 28], 7)
 def hangreport(request, product=None, versions=None, listsize=100):
     data = {}
-
     try:
         page = int(request.GET.get('page', 1))
         if page < 1:
@@ -274,15 +270,7 @@ def hangreport(request, product=None, versions=None, listsize=100):
     except ValueError:
         return http.HttpResponseBadRequest('Invalid page')
 
-    try:
-        duration = int(request.GET.get('duration', 7))
-    except ValueError:
-        return http.HttpResponseBadRequest('Invalid duration')
-
-    if duration not in (3, 7, 14, 28):
-        return http.HttpResponseBadRequest('Invalid duration')
-    data['duration'] = int(duration)
-
+    days = request.days
     end_date = datetime.datetime.utcnow().strftime('%Y-%m-%d')
 
     # FIXME refactor into common function
@@ -308,7 +296,7 @@ def hangreport(request, product=None, versions=None, listsize=100):
                                      current_query.urlencode())
 
     api = models.HangReport()
-    data['hangreport'] = api.get(product, versions, end_date, duration,
+    data['hangreport'] = api.get(product, versions, end_date, days,
                                  listsize, page)
 
     data['hangreport']['total_pages'] = data['hangreport']['totalPages']
@@ -321,22 +309,22 @@ def hangreport(request, product=None, versions=None, listsize=100):
             versions = ';'.join(versions)
         url = reverse('crashstats.hangreport',
                       args=[product, versions])
-        url += ('?duration=%s&page=%s'
-                % (duration, data['hangreport']['totalPages']))
+        url += ('?days=%s&page=%s'
+                % (days, data['hangreport']['totalPages']))
         return redirect(url)
 
     data['current_page'] = page
+    data['days'] = days
     return render(request, 'crashstats/hangreport.html', data)
 
 
 
 @set_base_data
-def topchangers(request, product=None, versions=None, days=7):
+@check_days_parameter([3, 7, 14, 28], 7)
+def topchangers(request, product=None, versions=None):
     data = {}
 
-    days = int(days)
-    if days not in (3, 7, 14, 28):
-        days = 7
+    days = request.days
 
     if not versions:
         # :(
@@ -353,7 +341,7 @@ def topchangers(request, product=None, versions=None, days=7):
         versions = versions.split(';')
 
     data['days'] = days
-    data['versions'] = versions 
+    data['versions'] = versions
 
     end_date = datetime.datetime.utcnow()
 
@@ -448,7 +436,7 @@ def report_list(request):
                                               '%Y-%m-%d')
     else:
         end_date = datetime.datetime.utcnow()
-    
+
     duration = int(request.GET.get('range_value'))
     data['current_day'] = duration
 
@@ -513,7 +501,7 @@ def report_list(request):
             data['table'][buildid][os_name] = 1
         else:
             data['table'][buildid][os_name] += 1
-            
+
         if report['user_comments']:
             data['comments'].append((report['user_comments'],
                                      report['uuid'],
