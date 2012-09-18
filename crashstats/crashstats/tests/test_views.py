@@ -449,6 +449,9 @@ class TestViews(TestCase):
         bad_url2 = reverse('crashstats.topchangers',
                       args=('Firefox', '19.999'))
 
+        url_wo_version = reverse('crashstats.topchangers',
+                                 args=('Firefox',))
+
         def mocked_post(**options):
             assert 'by/signatures' in options['url'], options['url']
             return Response("""
@@ -492,6 +495,10 @@ class TestViews(TestCase):
         rpost.side_effect = mocked_post
         rget.side_effect = mocked_get
 
+        response = self.client.get(url_wo_version)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, url)
+
         # invalid version for the product name
         response = self.client.get(bad_url)
         self.assertEqual(response.status_code, 404)
@@ -503,7 +510,8 @@ class TestViews(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_hangreport(self):
+    @mock.patch('requests.get')
+    def test_hangreport(self, rget):
         def mocked_get(url, **options):
             if 'current/versions' in url:
                 return Response("""
@@ -543,20 +551,25 @@ class TestViews(TestCase):
             raise NotImplementedError(url)
 
         url = reverse('crashstats.hangreport', args=('Firefox', '19.0'))
+        url_wo_version = reverse('crashstats.hangreport',
+                                 args=('Firefox',))
 
-        with mock.patch('requests.get') as rget:
-            rget.side_effect = mocked_get
+        rget.side_effect = mocked_get
 
-            response = self.client.get(url)
-            self.assertEqual(response.status_code, 200)
-            self.assertTrue('text/html' in response['content-type'])
+        response = self.client.get(url_wo_version)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, url)
 
-            # if you try to fake the page you get redirect back
-            response = self.client.get(url, {'page': 9})
-            self.assertEqual(response.status_code, 302)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('text/html' in response['content-type'])
 
-            response = self.client.get(url, {'page': ''})
-            self.assertEqual(response.status_code, 400)
+        # if you try to fake the page you get redirect back
+        response = self.client.get(url, {'page': 9})
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get(url, {'page': ''})
+        self.assertEqual(response.status_code, 400)
 
     def test_signature_summary(self):
         def mocked_get(url, **options):

@@ -195,10 +195,17 @@ def topcrasher(request, product=None, versions=None,
 def daily(request, product=None, versions=None):
     data = {}
 
-    versions = []
-    for release in request.currentversions:
-        if release['product'] == request.product and release['featured']:
-            versions.append(release['version'])
+    if versions is None:
+        versions = []
+        for release in request.currentversions:
+            if release['product'] == request.product and release['featured']:
+                versions.append(release['version'])
+    else:
+        versions = versions.split(';')
+
+    data['versions'] = versions
+    if len(versions) == 1:
+        data['version'] = versions[0]
 
     os_names = settings.OPERATING_SYSTEMS
 
@@ -334,14 +341,15 @@ def topchangers(request, product=None, versions=None):
             if release['product'] == product and release['featured']:
                 url = reverse('crashstats.topchangers',
                               kwargs=dict(product=product,
-                                          versions=release['version'],
-                                          days=days))
+                                          versions=release['version']))
                 return redirect(url)
     else:
         versions = versions.split(';')
 
     data['days'] = days
     data['versions'] = versions
+    if len(versions) == 1:
+        data['version'] = versions[0]
 
     end_date = datetime.datetime.utcnow()
 

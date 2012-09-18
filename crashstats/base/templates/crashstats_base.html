@@ -68,11 +68,7 @@
                 Product:
                 <select id="products_select">
                 {% for r in currentversions|groupby('product') %}
-                    {% if r[0] == product %}
-                    <option value="{{ r[0] }}" selected>{{ r[0] }}</option>
-                    {% else %}
-                    <option value="{{ r[0] }}">{{ r[0] }}</option>
-                    {% endif %}
+                    <option value="{{ r[0] }}" {% if r[0] == product %}selected{% endif %}>{{ r[0] }}</option>
                 {% endfor %}
                 </select>
             </li>
@@ -86,7 +82,11 @@
                         {% if r[0] == product %}
                             {% for v in r[1] %}
                                 {% if v.featured %}
-                                    <option value="{{ v.version }}" {% if v.version == version %} SELECTED {% endif %}>{{ v.version }}</option>
+                                    <option value="{{ v.version }}" {% if v.version == version %}selected{% endif %}>{{ v.version }}
+				    (
+				    {{ v.version}},{{version}}
+				    )
+				    </option>
                                 {% endif %}
                             {% endfor  %}
                         {% endif  %}
@@ -97,7 +97,7 @@
                         {% if r[0] == product %}
                             {% for v in r[1] %}
                                 {% if not v.featured %}
-                                    <option value="{{ v.version }}" {% if v.version == version %} SELECTED {% endif %}>{{ v.version }}</option>
+                                    <option value="{{ v.version }}" {% if v.version == version %}selected{% endif %}>{{ v.version }}</option>
                                 {% endif %}
                             {% endfor  %}
                         {% endif  %}
