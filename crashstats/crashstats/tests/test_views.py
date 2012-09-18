@@ -437,15 +437,11 @@ class TestViews(TestCase):
             struct = json.loads(response.content)
             self.assertTrue(struct['signature'])
 
-    def test_topchangers(self):
+    @mock.patch('requests.post')
+    @mock.patch('requests.get')
+    def test_topchangers(self, rget, rpost):
         url = reverse('crashstats.topchangers',
                       args=('Firefox', '19.0'))
-
-        url_duration = reverse('crashstats.topchangers',
-                               args=('Firefox', '19.0', '7'))
-
-        bad_url_duration = reverse('crashstats.topchangers',
-                                   args=('Firefox', '19.0', '111'))
 
         bad_url = reverse('crashstats.topchangers',
                       args=('Camino', '19.0'))
@@ -493,29 +489,19 @@ class TestViews(TestCase):
                 """)
             raise NotImplementedError(url)
 
-        with mock.patch('requests.post') as rpost:
-            rpost.side_effect = mocked_post
-            with mock.patch('requests.get') as rget:
-                rget.side_effect = mocked_get
+        rpost.side_effect = mocked_post
+        rget.side_effect = mocked_get
 
-                # invalid version for the product name
-                response = self.client.get(bad_url)
-                self.assertEqual(response.status_code, 404)
+        # invalid version for the product name
+        response = self.client.get(bad_url)
+        self.assertEqual(response.status_code, 404)
 
-                # invalid version for the product name
-                response = self.client.get(bad_url2)
-                self.assertEqual(response.status_code, 404)
+        # invalid version for the product name
+        response = self.client.get(bad_url2)
+        self.assertEqual(response.status_code, 404)
 
-                # valid response
-                response = self.client.get(url_duration)
-                self.assertEqual(response.status_code, 200)
-
-                # an integer but not one we can accept
-                response = self.client.get(bad_url_duration)
-                self.assertEqual(response.status_code, 200)
-
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, 200)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
     def test_hangreport(self):
         def mocked_get(url, **options):

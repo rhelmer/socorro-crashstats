@@ -5,7 +5,7 @@
     <h2>Top Changers for {{ product }} {{ versions|join(', ') }}</h2>
     <ul class="options">
     {% for d in [3, 7, 14, 28] %}
-      <li><a href="{{ url('crashstats.topchangers', product, versions|join(';'), d ) }}" {% if days == d %}class="selected"{% endif %}>{{ d }} days</a></li>
+      <li><a href="?days={{ d }}" {% if days == d %}class="selected"{% endif %}>{{ d }} days</a></li>
     {% endfor %}
     </ul>
   </div>
