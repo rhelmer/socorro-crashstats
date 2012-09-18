@@ -325,7 +325,6 @@ def hangreport(request, product=None, versions=None, listsize=100):
     return render(request, 'crashstats/hangreport.html', data)
 
 
-
 @set_base_data
 @check_days_parameter([3, 7, 14, 28], 7)
 def topchangers(request, product=None, versions=None):
@@ -489,12 +488,14 @@ def report_list(request):
         os_name = report['os_name']
 
         report['date_processed'] = datetime.datetime.strptime(
-          report['date_processed'], '%Y-%m-%d %H:%M:%S.%f+00:00').strftime(
-            '%b %d, %Y %H:%M')
+            report['date_processed'],
+            '%Y-%m-%d %H:%M:%S.%f+00:00'
+        ).strftime('%b %d, %Y %H:%M')
 
         report['install_time'] = datetime.datetime.strptime(
-          report['install_time'], '%Y-%m-%d %H:%M:%S+00:00').strftime(
-            '%Y-%m-%d %H:%M:%S')
+            report['install_time'],
+            '%Y-%m-%d %H:%M:%S+00:00'
+        ).strftime('%Y-%m-%d %H:%M:%S')
 
         data['hits'] = report
 
@@ -517,7 +518,7 @@ def report_list(request):
 
     bugs_api = models.Bugs()
     data['bug_associations'] = bugs_api.get(
-      [data['signature']]
+        [data['signature']]
     )['bug_associations']
 
     return render(request, 'crashstats/report_list.html', data)

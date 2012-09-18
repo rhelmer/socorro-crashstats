@@ -616,6 +616,7 @@ class TestViews(TestCase):
     def test_report_index(self, rget, rpost):
         dump = "OS|Mac OS X|10.6.8 10K549\\nCPU|amd64|family 6 mod"
         comment0 = "This is a comment"
+
         def mocked_get(url, **options):
             if 'crash/meta' in url:
                 return Response("""
