@@ -43,6 +43,22 @@ def get_search_parameters(request):
     }
 
 
+def get_adu_byversion_parameters(request):
+    """Return a dictionary of parameters for the daily service,
+       where the form_selection parameter was by_version.
+    """
+
+    return {
+        'product': request.GET.get('p'),
+        'versions': request.GET.get('v[]'),
+        'hang_type': request.GET.get('hang_type'),
+        'operating_system': request.GET.get('os[]'),
+        'date_range_type': request.GET.get('date_range_type'),
+        'start_date': request.GET.get('date_start'),
+        'end_date': request.GET.get('date_end')
+    }
+
+
 def plot_graph(start_date, end_date, crashes, currentversions):
     graph_data = {
         'startDate': start_date.strftime('%Y-%m-%d'),
@@ -123,6 +139,18 @@ def build_data_object_for_crash_reports(response_items):
         crash_reports.append(prod_ver)
 
     return crash_reports
+
+
+# Returns the product display names of all products in the database
+def get_product_names():
+    products = []
+    products_model = models.CurrentProducts()
+    response = products_model.get()
+
+    for product in response['hits']:
+        products.append(product['product_name'])
+
+    return products
 
 
 def set_base_data(view):
@@ -376,8 +404,27 @@ def _render_topcrasher_csv(request, data, product):
 @set_base_data
 def daily(request, product=None, versions=None):
     data = {}
+    form_selection = request.GET.get('form_selection')
 
-    if versions is None:
+    if form_selection is 'by_version':
+        params = get_adu_byversion_parameters(request)
+    else:
+        params = get_adu_byversion_parameters(request)
+
+    data['products'] = get_product_names()
+    data['product'] = params['product']
+
+    os_names = []
+    platforms_api = models.Platforms()
+    platforms = platforms_api.get()
+
+    for platform in platforms:
+        os_names.append(platform['name'])
+
+    data['operating_systems'] = os_names
+    data['operating_system'] = params['operating_system']
+
+    if params['versions'] is None:
         versions = []
         for release in request.currentversions:
             if release['product'] == request.product and release['featured']:
@@ -389,17 +436,40 @@ def daily(request, product=None, versions=None):
     if len(versions) == 1:
         data['version'] = versions[0]
 
-    os_names = settings.OPERATING_SYSTEMS
+    if params['start_date'] is None and params['end_date'] is None:
+        end_date = datetime.datetime.utcnow()
+        start_date = end_date - datetime.timedelta(days=8)
 
-    end_date = datetime.datetime.utcnow()
-    start_date = end_date - datetime.timedelta(days=8)
+        data['end_date'] = end_date.strftime('%Y-%m-%d')
+        data['start_date'] = start_date.strftime('%Y-%m-%d')
+    else:
+        data['start_date'] = params['start_date']
+        data['end_date'] = params['end_date']
+
+    start_date_as_datetime = datetime.datetime.strptime(data['start_date'], '%Y-%m-%d')
+    end_date_as_datetime = datetime.datetime.strptime(data['end_date'], '%Y-%m-%d')
+
+    data['duration'] = abs((start_date_as_datetime - end_date_as_datetime).days)
+    data['dates'] = utils.daterange(start_date_as_datetime, end_date_as_datetime)
+    data['hang_type'] = params['hang_type']
+    data['date_range_type'] = params['date_range_type']
 
     api = models.Crashes()
-    crashes = api.get(product, versions, os_names, start_date, end_date)
+    crashes = api.get(
+        data['product'],
+        versions,
+        os_names,
+        data['start_date'],
+        data['end_date']
+    )
 
     data['graph_data'] = json.dumps(
-        plot_graph(start_date, end_date, crashes['hits'],
-                   request.currentversions)
+        plot_graph(
+            data['start_date'],
+            data['end_date'],
+            crashes['hits'],
+            request.currentversions
+        )
     )
     data['report'] = 'daily'
 
