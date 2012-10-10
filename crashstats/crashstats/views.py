@@ -459,14 +459,14 @@ def daily(request, product=None, versions=None):
         data['product'],
         versions,
         os_names,
-        data['start_date'],
-        data['end_date']
+        start_date_as_datetime,
+        end_date_as_datetime
     )
 
     data['graph_data'] = json.dumps(
         plot_graph(
-            data['start_date'],
-            data['end_date'],
+            start_date_as_datetime,
+            end_date_as_datetime,
             crashes['hits'],
             request.currentversions
         )
