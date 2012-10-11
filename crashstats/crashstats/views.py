@@ -422,6 +422,7 @@ def daily(request):
     versions = []
     if 'versions' in params:
         versions = params['versions']
+        versions = [x for x in versions if x != '']
 
     if len(versions) == 0:
         for release in request.currentversions:
