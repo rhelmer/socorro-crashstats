@@ -265,13 +265,15 @@ class Crashes(SocorroMiddleware):
         params = {
             'product': product,
             'versions': '+'.join(versions),
+            'os_names': '+'.join(os_names),
             'start_date': start_date.strftime('%Y-%m-%d'),
             'end_date': end_date.strftime('%Y-%m-%d'),
         }
+
         self.urlencode_params(params)
         url = ('/crashes/daily/product/%(product)s/versions/%(versions)s/'
                'from_date/%(start_date)s/to_date/%(end_date)s/'
-               'date_range_type/report/' % params)
+               'date_range_type/report/os/%(os_names)s' % params)
         return self.fetch(url)
 
 

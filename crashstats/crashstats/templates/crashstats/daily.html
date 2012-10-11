@@ -79,7 +79,7 @@
                         <th>O/S</th>
                         <td>
                             <input id="os_Windows_check" type="checkbox" name="os[]" value="Windows" checked="checked"/> Windows
-                            <input id="os_Mac_check" type="checkbox" name="os[]" value="Mac" checked="checked"/> Mac OS X
+                            <input id="os_Mac_check" type="checkbox" name="os[]" value="Mac OS X" checked="checked"/> Mac OS X
                             <input id="os_Linux_check" type="checkbox" name="os[]" value="Linux" checked="checked"/> Linux
                         </td>
                     </tr>
@@ -215,8 +215,8 @@
             <table id="crash_data" class="data-table crash_data zebra">
                 <tr>
                     <th class="date" rowspan="2">Date</th>
-                {% set crash_date = data_table.iterkeys().next() %}
-                {% for crash_info in data_table[crash_date] %}
+                {% set crash_date = data_table.dates.iterkeys().next() %}
+                {% for crash_info in data_table.dates[crash_date] %}
                     <th class="version" colspan="4">{{ crash_info.version }}</th>
                 {% endfor %}
                 </tr>
@@ -228,24 +228,25 @@
                     <th class="stat">Ratio</th>
                 {% endfor %} 
                 </tr> 
-                {% for crash_date in data_table | sort %}
+                {% for crash_date in data_table.dates %}
                 <tr>
                   <td>{{ crash_date }}</td>
-                  {% for crash_info in data_table[crash_date] %}
+                  {% for crash_info in data_table.dates[crash_date] %}
                     <td>{{ crash_info.report_count }}</td>
                     <td>{{ crash_info.adu }}</td>
-                    <td title="The throttle rate is the effective throttle rate - the combined throttle rate for client-side throttling and server-side throttling.">TODO throttle</td>
+                    <td title="The throttle rate is the effective throttle rate - the combined throttle rate for client-side throttling and server-side throttling.">{{ crash_info.throttle * 100 }}%</td>
                     <td>{{ crash_info.crash_hadu }}</td>
                   {% endfor %}
                 </tr>
                 {% endfor %}
                 <tr>
                     <td class="date"><strong>Total</strong></td>
-                {% for version in versions %}
-                    <td class="stat"><strong>TODO total crashes</strong></td>
-                    <td class="stat"><strong>TODO total adu</strong></td>
-                    <td class="stat" title="The throttle rate is the effective throttle rate - the combined throttle rate for client-side throttling and server-side throttling."><strong>TODO total throttle</strong></td>
-                    <td class="stat"><strong>TODO total ratio</strong></td>
+                {% for product_version in data_table.totals | sort %}
+                  {% set total = data_table.totals[product_version] %}
+                    <td class="stat"><strong>{{ total.crashes }}</strong></td>
+                    <td class="stat"><strong>{{ total.adu }}</strong></td>
+                    <td class="stat" title="The throttle rate is the effective throttle rate - the combined throttle rate for client-side throttling and server-side throttling."><strong>{{ total.throttle }}</strong></td>
+                    <td class="stat"><strong>{{ total.ratio }}</strong></td>
                 {% endfor %}
                 </tr>
             </table>

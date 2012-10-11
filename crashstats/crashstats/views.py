@@ -6,6 +6,7 @@ import math
 import isodate
 
 from collections import defaultdict
+from operator import itemgetter
 from django import http
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -441,7 +442,7 @@ def daily(request):
     platforms = platforms_api.get()
 
     for platform in platforms:
-        if 'os_name' in params:
+        if 'os_name' in params and len(params['os_name']) > 0:
             if params['os_name'] in platforms:
                 os_names.append(platform['name'])
         else:
@@ -471,16 +472,32 @@ def daily(request):
         end_date_as_datetime
     )
 
-    data_table = {}
+    data_table = { 
+        'totals': {},
+        'dates': {}
+    }
     for product_version in crashes['hits']:
+        data_table['totals'][product_version] = {
+            'crashes': 0,
+            'adu': 0,
+            'throttle': 0,
+            'crash_hadu': 0,
+            'ratio': 0,
+        }
         for date in crashes['hits'][product_version]:
             crash_info = crashes['hits'][product_version][date]
-            if date not in data_table:
-                data_table[date] = []
-            data_table[date].append(crash_info)
+            if date not in data_table['dates']:
+                data_table['dates'][date] = []
+            data_table['dates'][date].append(crash_info)
+            data_table['totals'][product_version]['crashes'] += crash_info['report_count']
+            data_table['totals'][product_version]['adu'] += crash_info['adu']
+            # FIXME this is silly, what is the total supposed to be if it did change?
+            data_table['totals'][product_version]['throttle'] = crash_info['throttle']
+            data_table['totals'][product_version]['ratio'] += crash_info['crash_hadu']
 
-    for date in product_version:
-        print product_version
+    for date in data_table['dates']:
+        data_table['dates'][date] = sorted(data_table['dates'][date],
+                                           key=itemgetter('version'))
 
     data['data_table'] = data_table
 
