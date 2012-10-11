@@ -4,7 +4,6 @@ import datetime
 import functools
 import math
 import isodate
-import urllib
 
 from collections import defaultdict
 from django import http
@@ -471,6 +470,19 @@ def daily(request):
         start_date_as_datetime,
         end_date_as_datetime
     )
+
+    data_table = {}
+    for product_version in crashes['hits']:
+        for date in crashes['hits'][product_version]:
+            crash_info = crashes['hits'][product_version][date]
+            if date not in data_table:
+                data_table[date] = []
+            data_table[date].append(crash_info)
+
+    for date in product_version:
+        print product_version
+
+    data['data_table'] = data_table
 
     data['graph_data'] = json.dumps(
         plot_graph(
