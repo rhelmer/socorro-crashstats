@@ -78,9 +78,9 @@
                     <tr>
                         <th>O/S</th>
                         <td>
-                            <input id="os_Windows_check" type="checkbox" name="os[]" value="Windows" checked="checked"/> Windows
-                            <input id="os_Mac_check" type="checkbox" name="os[]" value="Mac OS X" checked="checked"/> Mac OS X
-                            <input id="os_Linux_check" type="checkbox" name="os[]" value="Linux" checked="checked"/> Linux
+                            <input id="os_Windows_check" type="checkbox" name="os[]" value="Windows" {% if 'Windows' in os_names %} checked="checked" {% endif %}/> Windows
+                            <input id="os_Mac_check" type="checkbox" name="os[]" value="Mac OS X" {% if 'Mac OS X' in os_names %} checked="checked" {% endif %}/> Mac OS X
+                            <input id="os_Linux_check" type="checkbox" name="os[]" value="Linux" {% if 'Linux' in os_names %} checked="checked" {% endif %}/> Linux
                         </td>
                     </tr>
 
@@ -139,9 +139,9 @@
                     <tr>
                     <th>Type:</th>
                         <td>
-                           <span class="radio-item"><label><input type="radio" name="hang_type" value="any" checked="checked"  /> Any</label></span>
-                           <span class="radio-item"><label><input type="radio" name="hang_type" value="crash"  /> Crash</label></span>
-                           <span class="radio-item"><label><input type="radio" name="hang_type" value="hang"  /> Hang</label></span>
+                           <span class="radio-item"><label><input type="radio" name="hang_type" value="any" {% if hang_type == 'any' %} checked="checked" {% endif %} /> Any</label></span>
+                           <span class="radio-item"><label><input type="radio" name="hang_type" value="crash" {% if hang_type == 'crash' %} checked="checked" {% endif %} /> Crash</label></span>
+                           <span class="radio-item"><label><input type="radio" name="hang_type" value="hang" {% if hang_type == 'hang' %} checked="checked" {% endif %} /> Hang</label></span>
                         </td>
                     </tr>
 
@@ -150,12 +150,12 @@
                         <td>
                             <span class="radio-item">
                                 <label for="os_by_build">
-                                    <input type="radio" name="date_range_type" id="os_by_build" value="build" /> Build Date
+                                    <input type="radio" name="date_range_type" id="os_by_build" value="build" {% if date_range_type == 'build' %} checked="checked" {% endif %}/> Build Date
                                 </label>
                             </span>
                             <span class="radio-item">
                                 <label for="os_crash">
-                                    <input type="radio" name="date_range_type" id="os_crash" value="report" /> Crash Date
+                                    <input type="radio" name="date_range_type" id="os_crash" value="report" {% if date_range_type == 'os_crash' %} checked="checked" {% endif %}/> Crash Date
                                 </label>
                             </span>
                           </td>

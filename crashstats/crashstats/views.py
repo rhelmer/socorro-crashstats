@@ -441,12 +441,18 @@ def daily(request):
     platforms_api = models.Platforms()
     platforms = platforms_api.get()
 
-    for platform in platforms:
-        if 'os_name' in params and len(params['os_name']) > 0:
-            if params['os_name'] in platforms:
-                os_names.append(platform['name'])
-        else:
+    print params
+
+    if 'os_name' in params and len(params['os_name']) > 0:
+        for os in params['os_name']:
+            for platform in platforms:
+                if os == platform['name']:
+                    os_names.append(platform['name'])
+    else:
+        for platform in platforms:
             os_names.append(platform['name'])
+
+    data['os_names'] = os_names
 
     if 'date_start' in params and 'date_end' in params:
         data['start_date'] = params['start_date']
@@ -459,9 +465,13 @@ def daily(request):
     data['dates'] = utils.daterange(start_date_as_datetime, end_date_as_datetime)
     if 'hang_type' in params:
         data['hang_type'] = params['hang_type']
+    else:
+        data['hang_type'] = 'any'
 
     if 'date_range_type' in params:
         data['date_range_type'] = params['date_range_type']
+    else:
+        data['date_range_type'] = 'os_crash'
 
     api = models.Crashes()
     crashes = api.get(
