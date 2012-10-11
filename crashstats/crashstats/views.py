@@ -404,27 +404,25 @@ def _render_topcrasher_csv(request, data, product):
 @set_base_data
 def daily(request, product=None, versions=None):
     data = {}
+    params = {}
+
+    data['product'] = product
+    data['products'] = get_product_names()
+
     form_selection = request.GET.get('form_selection')
 
-    if form_selection is 'by_version':
+    if form_selection == 'by_version':
         params = get_adu_byversion_parameters(request)
-    else:
+    elif form_selection == 'by_os':
         params = get_adu_byversion_parameters(request)
 
-    data['products'] = get_product_names()
-    data['product'] = product
+    if 'version' in params:
+        url = reverse('crashstats.daily',
+                      kwargs=dict(product=product,
+                                  versions=params['versions']))
+        return redirect(url)
 
-    os_names = []
-    platforms_api = models.Platforms()
-    platforms = platforms_api.get()
-
-    for platform in platforms:
-        os_names.append(platform['name'])
-
-    data['operating_systems'] = os_names
-    data['operating_system'] = params['operating_system']
-
-    if params['versions'] is None:
+    if versions is None:
         versions = []
         for release in request.currentversions:
             if release['product'] == request.product and release['featured']:
@@ -433,16 +431,31 @@ def daily(request, product=None, versions=None):
         versions = versions.split(';')
 
     data['versions'] = versions
-    if len(versions) == 1:
-        data['version'] = versions[0]
 
-    if params['start_date'] is None and params['end_date'] is None:
-        end_date = datetime.datetime.utcnow()
-        start_date = end_date - datetime.timedelta(days=8)
+    end_date = datetime.datetime.utcnow()
+    start_date = end_date - datetime.timedelta(days=8)
 
-        data['end_date'] = end_date.strftime('%Y-%m-%d')
-        data['start_date'] = start_date.strftime('%Y-%m-%d')
-    else:
+    data['end_date'] = end_date.strftime('%Y-%m-%d')
+    data['start_date'] = start_date.strftime('%Y-%m-%d')
+
+    if 'product' in params and params['product'] in get_product_names():
+        if params['product'] != product:
+            url = reverse('crashstats.daily',
+                          kwargs=dict(product=product))
+            return redirect(url)
+
+    os_names = []
+    platforms_api = models.Platforms()
+    platforms = platforms_api.get()
+
+    for platform in platforms:
+        if 'os_name' in params:
+            if params['os_name'] in platforms:
+                os_names.append(platform['name'])
+        else:
+            os_names.append(platform['name'])
+
+    if 'date_start' in params and 'date_end' in params:
         data['start_date'] = params['start_date']
         data['end_date'] = params['end_date']
 
@@ -451,8 +464,11 @@ def daily(request, product=None, versions=None):
 
     data['duration'] = abs((start_date_as_datetime - end_date_as_datetime).days)
     data['dates'] = utils.daterange(start_date_as_datetime, end_date_as_datetime)
-    data['hang_type'] = params['hang_type']
-    data['date_range_type'] = params['date_range_type']
+    if 'hang_type' in params:
+        data['hang_type'] = params['hang_type']
+
+    if 'date_range_type' in params:
+        data['date_range_type'] = params['date_range_type']
 
     api = models.Crashes()
     crashes = api.get(

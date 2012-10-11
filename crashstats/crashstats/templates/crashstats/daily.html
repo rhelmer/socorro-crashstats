@@ -24,7 +24,7 @@
         <div id="daily_search_version">
             <h3><a href="#" id="click_by_version">Crashes per ADU by Version</a></h3>
             <p>All ADU ratios are generated per 100 ADUs, not per single ADU. "3.5 crashes/ADU" means that there are 3.5 crashes per 100 users, not per user. This ratio also does not distinguish between users who crash multiple times and multiple crashing users.</p>
-            <form id="daily_search_version_form" name="daily_search_version_form" action="{{ url('crashstats.daily', product) }}">
+            <form id="daily_search_version_form" name="daily_search_version_form" action="{{ url('crashstats.daily', product=product) }}">
 
                 <input type="hidden" name="form_selection" value="by_version">
 
@@ -51,13 +51,13 @@
                         {% endif %}
 
                         <td>
-                            <select id="version{{ i }}" name="v[]">
+                            <select id="version{{ i }}" name="version">
                                 <option value="">-- versions --</option>
                                 {% for r in currentversions|groupby('product') %}
                                     {% if r[0] == product %}
                                         {% for v in r[1] %}
                                             {% if v.featured %}
-                                                <option value="{{ v.version }}" {% if v.version == version %} SELECTED {% endif %}>{{ v.version }}</option>
+                                                <option value="{{ v.version }}" {% if v.version == versions[i] %} SELECTED {% endif %}>{{ v.version }}</option>
                                             {% endif %}
                                         {% endfor  %}
                                     {% endif  %}
@@ -78,9 +78,9 @@
                     <tr>
                         <th>O/S</th>
                         <td>
-                            <input id="os_Windows_check" type="checkbox" name="os[]" value="Windows"/> Windows
-                            <input id="os_Mac_check" type="checkbox" name="os[]" value="Mac"/> Mac
-                            <input id="os_Linux_check" type="checkbox" name="os[]" value="Linux"/> Linux
+                            <input id="os_Windows_check" type="checkbox" name="os_name" value="Windows" checked="checked"/> Windows
+                            <input id="os_Mac_check" type="checkbox" name="os_name" value="Mac" checked="checked"/> Mac
+                            <input id="os_Linux_check" type="checkbox" name="os_name" value="Linux" checked="checked"/> Linux
                         </td>
                     </tr>
 
@@ -89,7 +89,7 @@
                         <td>
                             <span class="radio-item">
                                 <label for="by_build">
-                                    <input type="radio" name="date_range_type" id="by_build" value="build" /> Build Date
+                                    <input type="radio" name="date_range_type" id="by_build" value="build" checked="checked"/> Build Date
                                 </label>
                             </span>
                             <span class="radio-item">
@@ -103,9 +103,9 @@
                     <tr class="datepicker-daily">
                         <th>When</th>
                         <td>
-                        <input class="date" type="text" name="date_start" value="2012-04-26" />
+                        <input class="date" type="text" name="date_start" value="{{ start_date }}" />
                         &nbsp; to &nbsp;
-                        <input class="date" type="text" name="date_end" value="2012-05-10" />
+                        <input class="date" type="text" name="date_end" value="{{ end_date }}" />
                         </td>
                     </tr>
                 </table>
