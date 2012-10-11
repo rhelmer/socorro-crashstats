@@ -441,8 +441,6 @@ def daily(request):
     platforms_api = models.Platforms()
     platforms = platforms_api.get()
 
-    print params
-
     if 'os_name' in params and len(params['os_name']) > 0:
         for os in params['os_name']:
             for platform in platforms:
@@ -521,8 +519,6 @@ def daily(request):
         )
     )
     data['report'] = 'daily'
-
-    print data
 
     return render(request, 'crashstats/daily.html', data)
 
