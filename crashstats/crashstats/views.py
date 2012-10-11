@@ -50,9 +50,9 @@ def get_adu_byversion_parameters(request):
 
     return {
         'product': request.GET.get('p'),
-        'versions': request.GET.get('v[]'),
+        'versions': request.GET.getlist('v[]'),
         'hang_type': request.GET.get('hang_type'),
-        'operating_system': request.GET.get('os[]'),
+        'operating_system': request.GET.getlist('os[]'),
         'date_range_type': request.GET.get('date_range_type'),
         'start_date': request.GET.get('date_start'),
         'end_date': request.GET.get('date_end')
@@ -416,10 +416,11 @@ def daily(request, product=None, versions=None):
     elif form_selection == 'by_os':
         params = get_adu_byversion_parameters(request)
 
-    if 'version' in params:
+    if 'versions' in params:
+        versions = ';'.join([x for x in params['versions'] if x])
         url = reverse('crashstats.daily',
                       kwargs=dict(product=product,
-                                  versions=params['versions']))
+                                  versions=versions))
         return redirect(url)
 
     if versions is None:

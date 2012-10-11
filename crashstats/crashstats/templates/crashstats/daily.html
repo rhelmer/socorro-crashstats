@@ -51,7 +51,7 @@
                         {% endif %}
 
                         <td>
-                            <select id="version{{ i }}" name="version">
+                            <select id="version{{ i }}" name="v[]">
                                 <option value="">-- versions --</option>
                                 {% for r in currentversions|groupby('product') %}
                                     {% if r[0] == product %}
@@ -78,9 +78,9 @@
                     <tr>
                         <th>O/S</th>
                         <td>
-                            <input id="os_Windows_check" type="checkbox" name="os_name" value="Windows" checked="checked"/> Windows
-                            <input id="os_Mac_check" type="checkbox" name="os_name" value="Mac" checked="checked"/> Mac
-                            <input id="os_Linux_check" type="checkbox" name="os_name" value="Linux" checked="checked"/> Linux
+                            <input id="os_Windows_check" type="checkbox" name="os[]" value="Windows" checked="checked"/> Windows
+                            <input id="os_Mac_check" type="checkbox" name="os[]" value="Mac" checked="checked"/> Mac
+                            <input id="os_Linux_check" type="checkbox" name="os[]" value="Linux" checked="checked"/> Linux
                         </td>
                     </tr>
 
