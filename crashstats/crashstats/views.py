@@ -412,7 +412,7 @@ def daily(request, product=None, versions=None):
         params = get_adu_byversion_parameters(request)
 
     data['products'] = get_product_names()
-    data['product'] = params['product']
+    data['product'] = product
 
     os_names = []
     platforms_api = models.Platforms()
