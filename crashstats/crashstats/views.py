@@ -463,6 +463,7 @@ def daily(request):
 
     data['duration'] = abs((start_date_as_datetime - end_date_as_datetime).days)
     data['dates'] = utils.daterange(start_date_as_datetime, end_date_as_datetime)
+
     if 'hang_type' in params:
         data['hang_type'] = params['hang_type']
     else:
@@ -520,6 +521,8 @@ def daily(request):
         )
     )
     data['report'] = 'daily'
+
+    print data
 
     return render(request, 'crashstats/daily.html', data)
 
