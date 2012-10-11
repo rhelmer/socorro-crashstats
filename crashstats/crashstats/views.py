@@ -4,6 +4,7 @@ import datetime
 import functools
 import math
 import isodate
+import urllib
 
 from collections import defaultdict
 from django import http
@@ -11,6 +12,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.syndication.views import Feed
+from django.http import QueryDict
 
 from session_csrf import anonymous_csrf
 
@@ -52,7 +54,7 @@ def get_adu_byversion_parameters(request):
         'product': request.GET.get('p'),
         'versions': request.GET.getlist('v[]'),
         'hang_type': request.GET.get('hang_type'),
-        'operating_system': request.GET.getlist('os[]'),
+        'os_name': request.GET.getlist('os[]'),
         'date_range_type': request.GET.get('date_range_type'),
         'start_date': request.GET.get('date_start'),
         'end_date': request.GET.get('date_end')
@@ -402,34 +404,29 @@ def _render_topcrasher_csv(request, data, product):
 
 
 @set_base_data
-def daily(request, product=None, versions=None):
+def daily(request):
     data = {}
     params = {}
 
-    data['product'] = product
     data['products'] = get_product_names()
 
     form_selection = request.GET.get('form_selection')
 
     if form_selection == 'by_version':
         params = get_adu_byversion_parameters(request)
-    elif form_selection == 'by_os':
+    else:
         params = get_adu_byversion_parameters(request)
 
-    if 'versions' in params:
-        versions = ';'.join([x for x in params['versions'] if x])
-        url = reverse('crashstats.daily',
-                      kwargs=dict(product=product,
-                                  versions=versions))
-        return redirect(url)
+    data['product'] = params['product']
 
-    if versions is None:
-        versions = []
+    versions = []
+    if 'versions' in params:
+        versions = params['versions']
+
+    if len(versions) == 0:
         for release in request.currentversions:
             if release['product'] == request.product and release['featured']:
                 versions.append(release['version'])
-    else:
-        versions = versions.split(';')
 
     data['versions'] = versions
 
@@ -438,12 +435,6 @@ def daily(request, product=None, versions=None):
 
     data['end_date'] = end_date.strftime('%Y-%m-%d')
     data['start_date'] = start_date.strftime('%Y-%m-%d')
-
-    if 'product' in params and params['product'] in get_product_names():
-        if params['product'] != product:
-            url = reverse('crashstats.daily',
-                          kwargs=dict(product=product))
-            return redirect(url)
 
     os_names = []
     platforms_api = models.Platforms()
