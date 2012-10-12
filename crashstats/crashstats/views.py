@@ -431,12 +431,6 @@ def daily(request):
 
     data['versions'] = versions
 
-    end_date = datetime.datetime.utcnow()
-    start_date = end_date - datetime.timedelta(days=8)
-
-    data['end_date'] = end_date.strftime('%Y-%m-%d')
-    data['start_date'] = start_date.strftime('%Y-%m-%d')
-
     os_names = []
     platforms_api = models.Platforms()
     platforms = platforms_api.get()
@@ -452,9 +446,18 @@ def daily(request):
 
     data['os_names'] = os_names
 
-    if 'date_start' in params and 'date_end' in params:
+    if 'start_date' in params and 'end_date' in params:
         data['start_date'] = params['start_date']
         data['end_date'] = params['end_date']
+    else:
+        end_date = datetime.datetime.utcnow()
+        start_date = end_date - datetime.timedelta(days=8)
+
+        data['end_date'] = end_date.strftime('%Y-%m-%d')
+        data['start_date'] = start_date.strftime('%Y-%m-%d')
+
+
+    print data['start_date']
 
     start_date_as_datetime = datetime.datetime.strptime(data['start_date'], '%Y-%m-%d')
     end_date_as_datetime = datetime.datetime.strptime(data['end_date'], '%Y-%m-%d')
