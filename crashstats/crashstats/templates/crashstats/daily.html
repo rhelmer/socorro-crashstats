@@ -28,7 +28,7 @@ Crashes per Active Daily User for {{ product }}
         <div id="daily_search_version">
             <h3><a href="#" id="click_by_version">Crashes per ADU by Version</a></h3>
             <p>All ADU ratios are generated per 100 ADUs, not per single ADU. "3.5 crashes/ADU" means that there are 3.5 crashes per 100 users, not per user. This ratio also does not distinguish between users who crash multiple times and multiple crashing users.</p>
-            <form id="daily_search_version_form" name="daily_search_version_form" action="{{ url('crashstats.daily') }}">
+            <form id="daily_search_version_form" name="daily_search_version_form" action="{{ url('crashstats.daily') }}" {% if form_selection != 'by_version' %} style="display: none"{% endif %}>
 
                 <input type="hidden" name="form_selection" value="by_version">
 
@@ -120,26 +120,42 @@ Crashes per Active Daily User for {{ product }}
 
         <div id="daily_search_os">
             <h3><a href="#" id="click_by_os">Crashes per ADU by O/S</a></h3>
-            <form id="daily_search_os_form" action="{{ url('crashstats.daily') }}" style="display: none">
+            <form id="daily_search_os_form" action="{{ url('crashstats.daily') }}" {% if form_selection != 'by_os' %} style="display: none"{% endif %}>
                 <input type="hidden" name="form_selection" value="by_os">
 
                 <table class="by_version">
                     <tr>
                     <th>Product</th>
                     <td>
-                    <select id="daily_search_os_form_products" name="p"></select>
+                    <select id="daily_search_os_form_products" name="p">
+                        {% for product_name in products %}
+                            {% if product == product_name %}
+                                <option value="{{ product_name }}" selected>{{ product_name }}</option>
+                            {% else %}
+                                <option value="{{ product_name }}">{{ product_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                     </td>
                     </tr>
 
                     <tr>
                         <th>Version</th>
                         <td>
-                            <select id="version4" name="v[]">
+                            <select id="version{{ i }}" name="v[]">
                                 <option value="">-- versions --</option>
+                                {% for r in currentversions|groupby('product') %}
+                                    {% if r[0] == product %}
+                                        {% for v in r[1] %}
+                                            {% if v.featured %}
+                                                <option value="{{ v.version }}" {% if v.version == versions[i] %} SELECTED {% endif %}>{{ v.version }}</option>
+                                            {% endif %}
+                                        {% endfor  %}
+                                    {% endif  %}
+                                {% endfor %}
                             </select>
                         </td>
                     </tr>
-
                     <tr>
                     <th>Type:</th>
                         <td>
