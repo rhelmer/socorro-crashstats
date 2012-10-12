@@ -403,12 +403,14 @@ def daily(request):
     data['products'] = get_product_names()
 
     form_selection = request.GET.get('form_selection')
-    data['form_selection'] = form_selection
 
-    if form_selection == 'by_version':
+    if form_selection == 'by_os':
         params = get_adu_byversion_parameters(request)
-    else:
+    else: 
+        form_selection = 'by_version'
         params = get_adu_byos_parameters(request)
+
+    data['form_selection'] = form_selection
 
     data['product'] = params['product']
 
