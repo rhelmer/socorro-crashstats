@@ -61,6 +61,21 @@ def get_adu_byversion_parameters(request):
     }
 
 
+def get_adu_byos_parameters(request):
+    """Return a dictionary of parameters for the daily service,
+       where the form_selection parameter was by_os.
+    """
+
+    return {
+        'product': request.GET.get('p'),
+        'versions': request.GET.getlist('v[]'),
+        'hang_type': request.GET.get('hang_type'),
+        'date_range_type': request.GET.get('date_range_type'),
+        'start_date': request.GET.get('date_start'),
+        'end_date': request.GET.get('date_end')
+    }
+
+
 def has_builds(product, versions):
     contains_builds = False
     prod_versions = []
@@ -392,7 +407,7 @@ def daily(request):
     if form_selection == 'by_version':
         params = get_adu_byversion_parameters(request)
     else:
-        params = get_adu_byversion_parameters(request)
+        params = get_adu_byos_parameters(request)
 
     data['product'] = params['product']
 
@@ -412,7 +427,7 @@ def daily(request):
     platforms_api = models.Platforms()
     platforms = platforms_api.get()
 
-    if len(params['os_name']) > 0:
+    if 'os_name' in params and len(params['os_name']) > 0:
         for os in params['os_name']:
             for platform in platforms:
                 if os == platform['name']:
