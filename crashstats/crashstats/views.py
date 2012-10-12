@@ -61,28 +61,6 @@ def get_adu_byversion_parameters(request):
     }
 
 
-def plot_graph(start_date, end_date, crashes, currentversions):
-    graph_data = {
-        'startDate': start_date.strftime('%Y-%m-%d'),
-        'endDate': end_date.strftime('%Y-%m-%d'),
-    }
-
-    count = 0
-
-    for count, product_version in enumerate(sorted(crashes, reverse=True),
-                                            start=1):
-        graph_data['item%s' % count] = product_version.split(':')[1]
-        graph_data['ratio%s' % count] = []
-        for day in sorted(crashes[product_version]):
-            ratio = crashes[product_version][day]['crash_hadu']
-            t = utils.unixtime(day, millis=True)
-            graph_data['ratio%s' % count].append([t, ratio])
-
-    graph_data['count'] = count
-
-    return graph_data
-
-
 def has_builds(product, versions):
     contains_builds = False
     prod_versions = []
@@ -420,7 +398,7 @@ def daily(request):
     data['product'] = params['product']
 
     versions = []
-    if 'versions' in params:
+    if params['versions']:
         versions = params['versions']
         versions = [x for x in versions if x != '']
 
@@ -435,7 +413,7 @@ def daily(request):
     platforms_api = models.Platforms()
     platforms = platforms_api.get()
 
-    if 'os_name' in params and len(params['os_name']) > 0:
+    if len(params['os_name']) > 0:
         for os in params['os_name']:
             for platform in platforms:
                 if os == platform['name']:
@@ -446,43 +424,46 @@ def daily(request):
 
     data['os_names'] = os_names
 
-    if 'start_date' in params and 'end_date' in params:
-        data['start_date'] = params['start_date']
-        data['end_date'] = params['end_date']
+    if params['start_date'] and params['end_date']:
+        end_date = datetime.datetime.strptime(params['end_date'], '%Y-%m-%d')
+        start_date = datetime.datetime.strptime(params['start_date'], '%Y-%m-%d')
     else:
         end_date = datetime.datetime.utcnow()
         start_date = end_date - datetime.timedelta(days=8)
 
-        data['end_date'] = end_date.strftime('%Y-%m-%d')
-        data['start_date'] = start_date.strftime('%Y-%m-%d')
+    data['start_date'] = start_date.strftime('%Y-%m-%d')
+    data['end_date'] = end_date.strftime('%Y-%m-%d')
 
+    data['duration'] = abs((start_date - end_date).days)
+    data['dates'] = utils.daterange(start_date, end_date)
 
-    print data['start_date']
-
-    start_date_as_datetime = datetime.datetime.strptime(data['start_date'], '%Y-%m-%d')
-    end_date_as_datetime = datetime.datetime.strptime(data['end_date'], '%Y-%m-%d')
-
-    data['duration'] = abs((start_date_as_datetime - end_date_as_datetime).days)
-    data['dates'] = utils.daterange(start_date_as_datetime, end_date_as_datetime)
-
-    if 'hang_type' in params:
+    if params['hang_type']:
         data['hang_type'] = params['hang_type']
     else:
         data['hang_type'] = 'any'
 
-    if 'date_range_type' in params:
+    if params['date_range_type']:
         data['date_range_type'] = params['date_range_type']
     else:
         data['date_range_type'] = 'os_crash'
 
-    api = models.Crashes()
+    api = models.CrashesPerAdu()
     crashes = api.get(
-        data['product'],
-        versions,
-        os_names,
-        start_date_as_datetime,
-        end_date_as_datetime
+        product=params['product'],
+        versions=versions,
+        start_date=start_date.date(),
+        end_date=end_date.date(),
+        date_range_type=params['date_range_type'],
+        os=os_names
     )
+
+    cadu = {}
+    cadu = build_data_object_for_adu_graphs(
+        data['start_date'],
+        data['end_date'],
+        crashes['hits']
+    )
+    cadu['product_versions'] = build_data_object_for_crash_reports(crashes['hits'])
 
     data_table = { 
         'totals': {},
@@ -513,14 +494,7 @@ def daily(request):
 
     data['data_table'] = data_table
 
-    data['graph_data'] = json.dumps(
-        plot_graph(
-            start_date_as_datetime,
-            end_date_as_datetime,
-            crashes['hits'],
-            request.currentversions
-        )
-    )
+    data['graph_data'] = json.dumps(cadu)
     data['report'] = 'daily'
 
     return render(request, 'crashstats/daily.html', data)
