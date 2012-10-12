@@ -142,13 +142,12 @@ Crashes per Active Daily User for {{ product }}
                     <tr>
                         <th>Version</th>
                         <td>
-                            <select id="version{{ i }}" name="v[]">
-                                <option value="">-- versions --</option>
+                            <select id="version" name="v[]">
                                 {% for r in currentversions|groupby('product') %}
                                     {% if r[0] == product %}
                                         {% for v in r[1] %}
                                             {% if v.featured %}
-                                                <option value="{{ v.version }}" {% if v.version == versions[i] %} SELECTED {% endif %}>{{ v.version }}</option>
+                                                <option value="{{ v.version }}" {% if v.version == versions[0] %} SELECTED {% endif %}>{{ v.version }}</option>
                                             {% endif %}
                                         {% endfor  %}
                                     {% endif  %}
@@ -184,9 +183,9 @@ Crashes per Active Daily User for {{ product }}
                     <tr class="datepicker-daily">
                         <th>When</th>
                         <td>
-                        <input class="date" type="text" name="date_start" value="2012-04-26" />
+                        <input class="date" type="text" name="date_start" value="{{ start_date }}" />
                         &nbsp; to &nbsp;
-                        <input class="date" type="text" name="date_end" value="2012-05-10" />
+                        <input class="date" type="text" name="date_end" value="{{ end_date }}" />
                         </td>
                     </tr>
                 </table>
@@ -228,9 +227,6 @@ Crashes per Active Daily User for {{ product }}
             </div>
         </div>
 
-        <div class="body">
-            <table id="crash_data" class="crash_data zebra"></table>
-        </div>
         <div class="body">
             <table id="crash_data" class="data-table crash_data zebra">
                 <tr>
