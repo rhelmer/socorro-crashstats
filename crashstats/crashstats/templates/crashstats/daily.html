@@ -174,7 +174,7 @@ Crashes per Active Daily User for {{ product }}
                             </span>
                             <span class="radio-item">
                                 <label for="os_crash">
-                                    <input type="radio" name="date_range_type" id="os_crash" value="report" {% if date_range_type == 'os_crash' %} checked="checked" {% endif %}/> Crash Date
+                                    <input type="radio" name="date_range_type" id="os_crash" value="report" {% if date_range_type == 'report' %} checked="checked" {% endif %}/> Crash Date
                                 </label>
                             </span>
                           </td>
@@ -233,16 +233,29 @@ Crashes per Active Daily User for {{ product }}
                     <th class="date" rowspan="2">Date</th>
                 {% set crash_date = data_table.dates.iterkeys().next() %}
                 {% for crash_info in data_table.dates[crash_date] %}
+                    {% if form_selection == 'by_version' %}
                     <th class="version" colspan="4">{{ crash_info.version }}</th>
+                    {% else %}
+                    <th class="version" colspan="4">{{ crash_info.os }}</th>
+                    {% endif %}
                 {% endfor %}
                 </tr>
                 <tr>
-                {% for version in versions %}
+                {% if form_selection == 'by_version' %}
+                  {% for version in versions %}
                     <th class="stat">Crashes</th>
                     <th class="stat">ADU</th>
                     <th class="stat" title="The throttle rate is the effective throttle rate - the combined throttle rate for client-side throttling and server-side throttling.">Throttle</th>
                     <th class="stat">Ratio</th>
-                {% endfor %} 
+                  {% endfor %} 
+                {% else %}
+                  {% for os in os_name %}
+                    <th class="stat">Crashes</th>
+                    <th class="stat">ADU</th>
+                    <th class="stat" title="The throttle rate is the effective throttle rate - the combined throttle rate for client-side throttling and server-side throttling.">Throttle</th>
+                    <th class="stat">Ratio</th>
+                  {% endfor %} 
+                {% endif %}
                 </tr> 
                 {% for crash_date in data_table.dates %}
                 <tr>

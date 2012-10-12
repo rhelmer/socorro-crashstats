@@ -446,7 +446,7 @@ def daily(request):
         start_date = datetime.datetime.strptime(params['start_date'], '%Y-%m-%d')
     else:
         end_date = datetime.datetime.utcnow()
-        start_date = end_date - datetime.timedelta(days=8)
+        start_date = end_date - datetime.timedelta(weeks=2)
 
     data['start_date'] = start_date.strftime('%Y-%m-%d')
     data['end_date'] = end_date.strftime('%Y-%m-%d')
@@ -462,7 +462,7 @@ def daily(request):
     if params['date_range_type']:
         data['date_range_type'] = params['date_range_type']
     else:
-        data['date_range_type'] = 'os_crash'
+        data['date_range_type'] = 'report'
 
     api = models.CrashesPerAdu()
     crashes = api.get(
@@ -471,7 +471,8 @@ def daily(request):
         start_date=start_date.date(),
         end_date=end_date.date(),
         date_range_type=params['date_range_type'],
-        os=os_names
+        os=os_names,
+        form_selection=form_selection
     )
 
     cadu = {}
@@ -506,8 +507,12 @@ def daily(request):
             data_table['totals'][product_version]['ratio'] += crash_info['crash_hadu']
 
     for date in data_table['dates']:
-        data_table['dates'][date] = sorted(data_table['dates'][date],
-                                           key=itemgetter('version'))
+        if form_selection == 'by_version':
+            data_table['dates'][date] = sorted(data_table['dates'][date],
+                                               key=itemgetter('version'))
+        else:
+            data_table['dates'][date] = sorted(data_table['dates'][date],
+                                               key=itemgetter('os'))
 
     data['data_table'] = data_table
 
