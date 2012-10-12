@@ -384,7 +384,6 @@ def _render_topcrasher_csv(request, data, product):
 @set_base_data
 def daily(request):
     data = {}
-    params = {}
 
     data['products'] = get_product_names()
 
