@@ -162,7 +162,6 @@ def build_releases(currentversions, now=None):
             release['start_date'], '%Y-%m-%d')
         end_date = datetime.datetime.strptime(
             release['end_date'], '%Y-%m-%d')
-        print now, start_date, end_date
         if not now:
             now = datetime.datetime.utcnow()
         if now >= start_date and now <= end_date:
