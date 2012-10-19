@@ -148,7 +148,7 @@ def parse_dump(dump, vcs_mappings):
     return parsed_dump
 
 
-def build_releases(currentversions):
+def build_releases(currentversions, now=None):
     """
     currentversions service returns a very unwieldy data structure.
     make something more suitable for templates.
@@ -158,9 +158,13 @@ def build_releases(currentversions):
         product = release['product']
         del release['product']
 
-        start_date = datetime.datetime.strptime(release['start_date'], '%Y-%m-%d')
-        end_date = datetime.datetime.strptime(release['end_date'], '%Y-%m-%d')
-        now = datetime.datetime.utcnow()
+        start_date = datetime.datetime.strptime(
+            release['start_date'], '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(
+            release['end_date'], '%Y-%m-%d')
+        print now, start_date, end_date
+        if not now:
+            now = datetime.datetime.utcnow()
         if now >= start_date and now <= end_date:
             print now, start_date, end_date
             if product not in releases:
