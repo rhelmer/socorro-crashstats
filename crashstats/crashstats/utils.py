@@ -165,7 +165,6 @@ def build_releases(currentversions, now=None):
         if not now:
             now = datetime.datetime.utcnow()
         if now >= start_date and now <= end_date:
-            print now, start_date, end_date
             if product not in releases:
                 releases[product] = [release]
             else:
