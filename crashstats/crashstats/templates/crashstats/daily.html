@@ -54,14 +54,10 @@ Crashes per Active Daily User for {{ product }}
                         <td>
                             <select id="version{{ i }}" name="v">
                                 <option value="">-- versions --</option>
-                                {% for r in currentversions|groupby('product') %}
-                                    {% if r[0] == product %}
-                                        {% for v in r[1] %}
-                                            {% if v.featured %}
-                                                <option value="{{ v.version }}" {% if v.version == versions[i] %} SELECTED {% endif %}>{{ v.version }}</option>
-                                            {% endif %}
-                                        {% endfor  %}
-                                    {% endif  %}
+                                {% for r in releases[product] %}
+                                  {% if r.featured %}
+                                  <option value="{{ r.version }}" {% if r.version == versions[i] %} SELECTED {% endif %}>{{ r.version }}</option>
+                                  {% endif  %}
                                 {% endfor %}
                             </select>
                         </td>

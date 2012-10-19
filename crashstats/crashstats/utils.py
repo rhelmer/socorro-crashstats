@@ -157,10 +157,17 @@ def build_releases(currentversions):
     for release in copy.deepcopy(currentversions):
         product = release['product']
         del release['product']
-        if product not in releases:
-            releases[product] = [release]
-        else:
-            releases[product].append(release)
+
+        start_date = datetime.datetime.strptime(release['start_date'], '%Y-%m-%d')
+        end_date = datetime.datetime.strptime(release['end_date'], '%Y-%m-%d')
+        now = datetime.datetime.utcnow()
+        if now >= start_date and now <= end_date:
+            print now, start_date, end_date
+            if product not in releases:
+                releases[product] = [release]
+            else:
+                releases[product].append(release)
+
     return releases
 
 
