@@ -26,8 +26,8 @@
         <li><a href="#graph"><span>Graph</span></a></li>
         <li><a href="#table"><span>Table</span></a></li>
         <li><a href="#reports"><span>Reports</span></a></li>
-        {% if bug_associations|count > 0 %}
-	<li><a href="#bugzilla"><span>Bugzilla ({{ bug_associations|count }})</span></a></li>
+        {% if bug_associations.total > 0 %}
+	<li><a href="#bugzilla"><span>Bugzilla ({{ bug_associations.total }})</span></a></li>
         {% endif %}
         {% if comments.total > 0 %}
 	<li><a href="#comments"><span>Comments ({{ comments.total }})</span></a></li>
@@ -242,7 +242,7 @@
     </ul>
       {% endif %}
     {% endfor %}
-    {% if bug_associations|count > 1 %}
+    {% if bug_associations.total > 1 %}
     <h2>Related Crash Signatures:</h2>
     {% for bug in bug_associations %}
       {% if bug.signature != signature %}
